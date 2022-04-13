@@ -1,6 +1,6 @@
 import {useQueryClient} from "react-query";
 import React from "react";
-import usePosts from "./hooks/usePosts";
+import usePosts from "../hooks/usePosts";
 import {Post} from "../types";
 
 interface Props {
