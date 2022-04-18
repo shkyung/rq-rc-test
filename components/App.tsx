@@ -1,13 +1,52 @@
-import React from "react"
-import { QueryClient, QueryClientProvider } from "react-query";
-import Example2 from './Example2'
+import * as React from "react";
+import {useQuery} from "react-query";
 
-const queryClient = new QueryClient();
+function getReposAndGists(username: string) {
+    return Promise.all([
+        fetch(`https://api.github.com/users/${username}/repos`)
+            .then((res) => res.json()),
+        fetch(`https://api.github.com/users/${username}/gists`)
+            .then((res) => res.json())
+    ]);
+}
 
-export default function App() {
+export default function App({username}: { username: string }) {
+    const reposAndGistsQuery = useQuery(
+        ["reposAndGists", username],
+        () => getReposAndGists(username),
+    );
+
+    if (reposAndGistsQuery.isLoading) {
+        return <p>Loading...</p>;
+    }
+
+    if (reposAndGistsQuery.isError) {
+        return <p>Error: {reposAndGistsQuery.error.message}</p>;
+    }
+
+    if (!reposAndGistsQuery.data) {
+        return null;
+    }
+
+    const [repos, gists] = reposAndGistsQuery.data;
+
     return (
-        <QueryClientProvider client={queryClient}>
-            <Example2/>
-        </QueryClientProvider>
+        <div>
+            <h2>Repos</h2>
+            <ul>
+                {repos.map((repo) => (
+                    <li key={repo.id}>{repo.name}</li>
+                ))}
+            </ul>
+
+            <hr />
+
+            <h2>Gists</h2>
+            <ul>
+                {gists.map((gist) => (
+                    <li key={gist.id}>{gist.description}</li>
+                ))}
+            </ul>
+        </div>
     );
 }
